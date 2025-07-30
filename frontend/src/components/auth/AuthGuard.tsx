@@ -13,18 +13,27 @@ export const AuthGuard = ({ children, requireAuth = true }: AuthGuardProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const navigate = useNavigate();
   const isVisible = usePageVisibility();
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     console.log('AuthGuard: Setting up auth listener');
+    
+    // Create new abort controller for this effect
+    abortControllerRef.current = new AbortController();
+    const { signal } = abortControllerRef.current;
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (signal.aborted) return;
+        
         console.log('AuthGuard: Auth state changed', { event, hasUser: !!session?.user });
         setUser(session?.user ?? null);
         setLoading(false);
+        setAuthError(null);
         
         // If user signed out, navigate to login
         if (event === 'SIGNED_OUT' && requireAuth) {
@@ -33,25 +42,31 @@ export const AuthGuard = ({ children, requireAuth = true }: AuthGuardProps) => {
       }
     );
 
-    // Check for existing session with timeout
+    // Check for existing session with proper error handling
     const checkSession = async () => {
+      if (signal.aborted) return;
+      
       try {
-        // Set a timeout to prevent infinite loading
-        timeoutRef.current = setTimeout(() => {
-          console.log('AuthGuard: Session check timeout');
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (signal.aborted) return;
+        
+        if (error) {
+          console.error('AuthGuard: Session check error', error);
+          setAuthError(error.message);
           setLoading(false);
-        }, 3000);
+          return;
+        }
 
-        const { data: { session } } = await supabase.auth.getSession();
         console.log('AuthGuard: Initial session check', { hasUser: !!session?.user });
         setUser(session?.user ?? null);
         setLoading(false);
-        
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
+        setAuthError(null);
       } catch (error) {
+        if (signal.aborted) return;
+        
         console.error('AuthGuard: Error checking session', error);
+        setAuthError('Failed to verify authentication');
         setLoading(false);
       }
     };
@@ -60,8 +75,8 @@ export const AuthGuard = ({ children, requireAuth = true }: AuthGuardProps) => {
 
     return () => {
       subscription.unsubscribe();
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
   }, [navigate, requireAuth]);
@@ -131,6 +146,24 @@ export const AuthGuard = ({ children, requireAuth = true }: AuthGuardProps) => {
       checkSessionAgain();
     }
   }, [isVisible, loading]);
+
+  // Show error state if authentication failed
+  if (authError) {
+    return (
+      <div className="min-h-screen bg-gradient-dark flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">Authentication Error</div>
+          <div className="text-white mb-4">{authError}</div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/80"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Show loading spinner while checking auth or profile
   if (loading || profileLoading) {
