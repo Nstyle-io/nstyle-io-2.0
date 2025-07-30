@@ -91,7 +91,7 @@ const TrendingSection = () => {
 
       <div className="relative overflow-hidden rounded-2xl">
         <div 
-          className="flex transition-transform duration-600 ease-in-out"
+          className="flex transition-transform duration-700 ease-in-out"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {Array.from({ length: totalSlides }).map((_, slideIndex) => (
