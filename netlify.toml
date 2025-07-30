@@ -1,0 +1,51 @@
+[build]
+  # Base directory for the build
+  base = "/"
+  
+  # Directory to deploy (where the built files are)
+  publish = "frontend/dist"
+  
+  # Build command - install dependencies in frontend first
+  command = "cd frontend && npm install && npm run build"
+
+[build.environment]
+  # Node version for builds
+  NODE_VERSION = "18"
+
+# SPA redirect rules for client-side routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# API proxy redirects (if needed for Supabase or other APIs)
+# Uncomment and configure if you need to proxy API calls
+# [[redirects]]
+#   from = "/api/*"
+#   to = "https://your-api-endpoint.com/:splat"
+#   status = 200
+#   force = true
+
+# Headers for security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

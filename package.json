@@ -1,0 +1,42 @@
+{
+  "name": "nstyle-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Nstyle - Social Platform for Nail Art Enthusiasts",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "preview": "cd frontend && npm run preview",
+    "test": "cd frontend && npm run test",
+    "lint": "cd frontend && npm run lint",
+    "type-check": "cd frontend && npm run type-check",
+    "docker:dev": "cd deploy && docker-compose up -d",
+    "docker:prod": "cd deploy && docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d",
+    "docker:down": "cd deploy && docker-compose down",
+    "install:all": "npm install && cd frontend && npm install",
+    "clean": "rm -rf node_modules frontend/node_modules frontend/dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/nstyle.git"
+  },
+  "keywords": [
+    "nail-art",
+    "social-media",
+    "beauty",
+    "salon",
+    "react",
+    "typescript",
+    "supabase"
+  ],
+  "author": "Nstyle Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yourusername/nstyle/issues"
+  },
+  "homepage": "https://github.com/yourusername/nstyle#readme"
+}

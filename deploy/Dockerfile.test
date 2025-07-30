@@ -1,0 +1,18 @@
+# Test environment Dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+COPY bun.lockb ./
+RUN npm ci
+
+# Install testing dependencies
+RUN npm install -D @testing-library/react @testing-library/jest-dom @testing-library/user-event vitest jsdom
+
+# Copy source code
+COPY . .
+
+# Run tests
+CMD ["npm", "run", "test"]

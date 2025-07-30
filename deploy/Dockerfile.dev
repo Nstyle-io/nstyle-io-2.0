@@ -1,0 +1,17 @@
+# Development Dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install global dependencies
+RUN apk add --no-cache git
+
+# Copy entrypoint script
+COPY deploy/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Expose development port
+EXPOSE 8080
+
+# Use the entrypoint script
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
