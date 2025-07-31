@@ -61,12 +61,24 @@ If API keys are accidentally exposed:
 4. **Review code** to prevent future exposure
 5. **Monitor for abuse** of the exposed keys
 
-### Build Security
+### Build Security & Netlify Configuration
 
-The build process scans for secrets to prevent accidental exposure:
-- Builds will fail if secrets are detected in output
-- Use placeholder values in example files
-- Always review build output before deployment
+**Frontend Environment Variables (VITE_ prefix):**
+- These are **intentionally public** and included in the build output
+- `VITE_SUPABASE_URL` - Public Supabase endpoint (safe to expose)
+- `VITE_SUPABASE_ANON_KEY` - Public anonymous key with RLS protection
+- `VITE_GOOGLE_MAPS_API_KEY` - Restricted to specific domains
+
+**Netlify Secrets Scanning:**
+- Netlify scans build output for secrets (security feature)
+- We configure `SECRETS_SCAN_OMIT_KEYS` in `netlify.toml` to allow public frontend variables
+- This prevents build failures while maintaining security
+
+**Build Security Best Practices:**
+- Use placeholder values in `.env.example` files
+- Never put server-side secrets in `VITE_` variables
+- Review build output during development
+- Monitor API key usage for unusual activity
 
 ## 🛡️ Additional Security Measures
 
