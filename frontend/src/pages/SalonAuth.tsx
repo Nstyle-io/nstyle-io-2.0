@@ -76,11 +76,11 @@ const SalonAuth = () => {
           navigate('/salon-setup');
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
       toast({
         title: "Login Error",
-        description: error.message || "Failed to sign in",
+        description: error instanceof Error ? error.message : "Failed to sign in",
         variant: "destructive"
       });
     } finally {
@@ -134,11 +134,11 @@ const SalonAuth = () => {
           description: "Please check your email to verify your account, then you can set up your salon profile."
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Signup error:', error);
       toast({
         title: "Signup Error",
-        description: error.message || "Failed to create account",
+        description: error instanceof Error ? error.message : "Failed to create account",
         variant: "destructive"
       });
     } finally {

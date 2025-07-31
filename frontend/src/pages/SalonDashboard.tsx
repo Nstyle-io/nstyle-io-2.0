@@ -1,21 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Calendar, 
-  Users, 
   DollarSign, 
   TrendingUp, 
-  Clock, 
-  MapPin, 
   Star, 
   Plus,
   Settings,
   BarChart3,
-  User,
-  Scissors,
-  Bell,
   Filter,
-  Download,
   Eye,
   Edit,
   Trash2
@@ -24,21 +16,90 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+
+// Types
+interface SalonProfile {
+  id: string;
+  salon_name: string;
+  owner_id: string;
+  description?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  instagram?: string;
+  facebook?: string;
+  google_maps_place_id?: string;
+  latitude?: number;
+  longitude?: number;
+  average_rating?: number;
+  total_reviews?: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Appointment {
+  id: string;
+  salon_id: string;
+  client_id?: string;
+  client_name: string;
+  client_email?: string;
+  client_phone?: string;
+  service_id: string;
+  staff_id?: string;
+  appointment_date: string;
+  start_time: string;
+  end_time: string;
+  status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
+  total_price_cents: number;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  services?: {
+    name: string;
+    price_cents: number;
+  };
+}
+
+interface Service {
+  id: string;
+  salon_id: string;
+  name: string;
+  description?: string;
+  category: string;
+  price_cents: number;
+  duration_minutes: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface StaffMember {
+  id: string;
+  salon_id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  role: string;
+  specialties?: string[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 const SalonDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [salonProfile, setSalonProfile] = useState<any>(null);
-  const [appointments, setAppointments] = useState<any[]>([]);
-  const [services, setServices] = useState<any[]>([]);
-  const [staff, setStaff] = useState<any[]>([]);
+  const [salonProfile, setSalonProfile] = useState<SalonProfile | null>(null);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   const [analytics, setAnalytics] = useState({
     todayRevenue: 0,
     weeklyRevenue: 0,
@@ -138,7 +199,7 @@ const SalonDashboard = () => {
     calculateAnalytics(appointmentsData || []);
   };
 
-  const calculateAnalytics = (appointmentsData: any[]) => {
+  const calculateAnalytics = (appointmentsData: Appointment[]) => {
     const today = new Date();
     const weekStart = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -155,7 +216,7 @@ const SalonDashboard = () => {
       new Date(apt.appointment_date) >= monthStart
     );
 
-    const completedAppointments = appointmentsData.filter(apt => apt.status === 'completed');
+    // Calculate analytics from appointment data
 
     setAnalytics({
       todayRevenue: todayAppointments.reduce((sum, apt) => sum + (apt.total_price_cents || 0), 0) / 100,

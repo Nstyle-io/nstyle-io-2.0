@@ -156,12 +156,19 @@ const Discover = () => {
         // Show a user-friendly message
         const toast = document.createElement('div');
         toast.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50';
-        toast.innerHTML = `
-          <div>
-            <p class="font-semibold">Google Maps API Error</p>
-            <p class="text-sm mt-1">Please configure your API key in Supabase or environment variables.</p>
-          </div>
-        `;
+        
+        const container = document.createElement('div');
+        const title = document.createElement('p');
+        title.className = 'font-semibold';
+        title.textContent = 'Google Maps API Error';
+        
+        const message = document.createElement('p');
+        message.className = 'text-sm mt-1';
+        message.textContent = 'Please configure your API key in Supabase or environment variables.';
+        
+        container.appendChild(title);
+        container.appendChild(message);
+        toast.appendChild(container);
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 8000);
         return;

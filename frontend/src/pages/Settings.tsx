@@ -352,7 +352,7 @@ const Settings = () => {
                         });
                         navigate('/login');
                       }
-                    } catch (_error) {
+                    } catch {
                       toast({
                         title: "Error",
                         description: "An unexpected error occurred.",

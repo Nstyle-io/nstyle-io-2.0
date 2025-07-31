@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { User } from '@supabase/supabase-js';
+import { UnifiedAuthService, AuthUser } from '@/services/unified-auth';
+import { BackendSelector } from '@/services/backend-selector';
 import { usePageVisibility } from '@/hooks/usePageVisibility';
 
 interface AuthGuardProps {
@@ -10,56 +11,60 @@ interface AuthGuardProps {
 }
 
 export const AuthGuard = ({ children, requireAuth = true }: AuthGuardProps) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const navigate = useNavigate();
   const isVisible = usePageVisibility();
   const abortControllerRef = useRef<AbortController | null>(null);
+  const unsubscribeRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    console.log('AuthGuard: Setting up auth listener');
+    console.log('AuthGuard: Setting up unified auth listener');
     
     // Create new abort controller for this effect
     abortControllerRef.current = new AbortController();
     const { signal } = abortControllerRef.current;
 
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (signal.aborted) return;
-        
-        console.log('AuthGuard: Auth state changed', { event, hasUser: !!session?.user });
-        setUser(session?.user ?? null);
-        setLoading(false);
-        setAuthError(null);
-        
-        // If user signed out, navigate to login
-        if (event === 'SIGNED_OUT' && requireAuth) {
-          navigate('/login');
-        }
+    // Set up unified auth state listener
+    const unsubscribe = UnifiedAuthService.onAuthStateChange((authUser) => {
+      if (signal.aborted) return;
+      
+      console.log('AuthGuard: Auth state changed', { 
+        hasUser: !!authUser, 
+        provider: authUser?.provider,
+        backend: BackendSelector.getProvider()
+      });
+      
+      setUser(authUser);
+      setLoading(false);
+      setAuthError(null);
+      
+      // If user signed out, navigate to login
+      if (!authUser && requireAuth) {
+        navigate('/login');
       }
-    );
+    });
+
+    unsubscribeRef.current = unsubscribe;
 
     // Check for existing session with proper error handling
     const checkSession = async () => {
       if (signal.aborted) return;
       
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const currentUser = await UnifiedAuthService.getCurrentUser();
         
         if (signal.aborted) return;
         
-        if (error) {
-          console.error('AuthGuard: Session check error', error);
-          setAuthError(error.message);
-          setLoading(false);
-          return;
-        }
-
-        console.log('AuthGuard: Initial session check', { hasUser: !!session?.user });
-        setUser(session?.user ?? null);
+        console.log('AuthGuard: Initial session check', { 
+          hasUser: !!currentUser,
+          provider: currentUser?.provider,
+          backend: BackendSelector.getProvider()
+        });
+        
+        setUser(currentUser);
         setLoading(false);
         setAuthError(null);
       } catch (error) {
@@ -74,7 +79,9 @@ export const AuthGuard = ({ children, requireAuth = true }: AuthGuardProps) => {
     checkSession();
 
     return () => {
-      subscription.unsubscribe();
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+      }
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -92,16 +99,23 @@ export const AuthGuard = ({ children, requireAuth = true }: AuthGuardProps) => {
 
         setProfileLoading(true);
         try {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('is_setup_complete')
-            .eq('user_id', user.id)
-            .single();
-          
-          if (!profile?.is_setup_complete) {
-            console.log('AuthGuard: Profile not complete, redirecting to profile setup');
-            navigate('/profile-setup');
-            return;
+          // Only check profile setup for Supabase users
+          // Firebase users might use a different profile system or skip this step
+          if (user.provider === 'supabase') {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('is_setup_complete')
+              .eq('user_id', user.id)
+              .single();
+            
+            if (!profile?.is_setup_complete) {
+              console.log('AuthGuard: Supabase profile not complete, redirecting to profile setup');
+              navigate('/profile-setup');
+              return;
+            }
+          } else {
+            // For Firebase users, we might implement a different profile check or skip it
+            console.log('AuthGuard: Firebase user detected, skipping Supabase profile check');
           }
         } catch (error) {
           console.error('AuthGuard: Error checking profile setup:', error);
@@ -135,8 +149,8 @@ export const AuthGuard = ({ children, requireAuth = true }: AuthGuardProps) => {
       // If page becomes visible and we're still loading, force a session check
       const checkSessionAgain = async () => {
         try {
-          const { data: { session } } = await supabase.auth.getSession();
-          setUser(session?.user ?? null);
+          const currentUser = await UnifiedAuthService.getCurrentUser();
+          setUser(currentUser);
           setLoading(false);
         } catch (error) {
           console.error('AuthGuard: Error rechecking session', error);

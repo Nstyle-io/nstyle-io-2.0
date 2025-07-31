@@ -105,7 +105,7 @@ export class AsyncHandler {
     delay: number = 300
   ): (...args: Parameters<T>) => Promise<ReturnType<T>> {
     let timeoutId: NodeJS.Timeout;
-    let _lastResolve: ((value: ReturnType<T>) => void) | null = null;
+    const _lastResolve: ((value: ReturnType<T>) => void) | null = null;
     let lastReject: ((reason: unknown) => void) | null = null;
 
     return (...args: Parameters<T>): Promise<ReturnType<T>> => {

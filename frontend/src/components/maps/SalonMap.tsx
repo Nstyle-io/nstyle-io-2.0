@@ -40,6 +40,10 @@ const SalonMap: React.FC<SalonMapProps> = ({ apiKey, onSalonSelect }) => {
   const [salons, setSalons] = useState<Salon[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
+  const [errorState, setErrorState] = useState<{
+    type: 'auth-failed' | 'load-failed' | null;
+    message?: string;
+  }>({ type: null });
 
   useEffect(() => {
     fetchSalons();
@@ -92,23 +96,7 @@ const SalonMap: React.FC<SalonMapProps> = ({ apiKey, onSalonSelect }) => {
       // Add global error handler for Google Maps
       (window as unknown as { gm_authFailure: () => void }).gm_authFailure = () => {
         console.error('Google Maps authentication failed - check your API key and billing');
-        if (mapRef.current) {
-          mapRef.current.innerHTML = `
-            <div class="w-full h-full flex items-center justify-center p-4 bg-gray-200 dark:bg-gray-800">
-              <div class="text-center">
-                <div class="text-red-500 text-2xl mb-2">⚠️</div>
-                <p class="text-sm font-semibold text-red-600 mb-2">Google Maps Authentication Failed</p>
-                <p class="text-xs text-gray-600 mb-2">Please check:</p>
-                <ul class="text-xs text-gray-500 text-left">
-                  <li>• Maps JavaScript API is enabled</li>
-                  <li>• Places API is enabled</li>
-                  <li>• Billing is enabled in Google Cloud</li>
-                  <li>• API key restrictions are correct</li>
-                </ul>
-              </div>
-            </div>
-          `;
-        }
+        setErrorState({ type: 'auth-failed' });
       };
       
       const loader = new Loader({
@@ -129,18 +117,10 @@ const SalonMap: React.FC<SalonMapProps> = ({ apiKey, onSalonSelect }) => {
       console.error('Error loading Google Maps:', error);
       
       // Show a detailed error state
-      if (mapRef.current) {
-        mapRef.current.innerHTML = `
-          <div class="w-full h-full flex items-center justify-center p-4 bg-gray-200 dark:bg-gray-800">
-            <div class="text-center">
-              <div class="text-red-500 text-2xl mb-2">⚠️</div>
-              <p class="text-sm font-semibold text-red-600 mb-2">Failed to load Google Maps</p>
-              <p class="text-xs text-gray-600 mb-2">Error: ${error instanceof Error ? error.message : 'Unknown error'}</p>
-              <p class="text-xs text-gray-500">Please enable Maps JavaScript API and Places API in Google Cloud Console</p>
-            </div>
-          </div>
-        `;
-      }
+      setErrorState({
+        type: 'load-failed',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   }, [apiKey, getUserLocationAndCreateMap]);
 
@@ -278,13 +258,43 @@ const SalonMap: React.FC<SalonMapProps> = ({ apiKey, onSalonSelect }) => {
         className="w-full h-full rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-800" 
         style={{ minHeight: '100%', height: '100%' }}
       >
-        {(!apiKey || apiKey === 'your-google-maps-api-key') && (
+        {(!apiKey || apiKey === 'your-google-maps-api-key') && !errorState.type && (
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center">
               <MapPin className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">
                 {!apiKey ? 'Loading map...' : 'Invalid API key'}
               </p>
+            </div>
+          </div>
+        )}
+        
+        {errorState.type && (
+          <div className="w-full h-full flex items-center justify-center p-4 bg-gray-200 dark:bg-gray-800">
+            <div className="text-center">
+              {errorState.type === 'auth-failed' && (
+                <>
+                  <div className="text-red-500 text-2xl mb-2">⚠️</div>
+                  <p className="text-sm font-semibold text-red-600 mb-2">Google Maps Authentication Failed</p>
+                  <p className="text-xs text-gray-600 mb-2">Please check:</p>
+                  <ul className="text-xs text-gray-500 text-left space-y-1">
+                    <li>• Maps JavaScript API is enabled</li>
+                    <li>• Places API is enabled</li>
+                    <li>• Billing is enabled in Google Cloud</li>
+                    <li>• API key restrictions are correct</li>
+                  </ul>
+                </>
+              )}
+              {errorState.type === 'load-failed' && (
+                <>
+                  <div className="text-red-500 text-2xl mb-2">⚠️</div>
+                  <p className="text-sm font-semibold text-red-600 mb-2">Failed to load Google Maps</p>
+                  {errorState.message && (
+                    <p className="text-xs text-gray-600 mb-2">Error: {errorState.message}</p>
+                  )}
+                  <p className="text-xs text-gray-500">Please enable Maps JavaScript API and Places API in Google Cloud Console</p>
+                </>
+              )}
             </div>
           </div>
         )}

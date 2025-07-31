@@ -93,7 +93,7 @@ export const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps
           story_id: currentStory.id,
           viewer_id: user.id
         });
-    } catch (_error) {
+    } catch {
       // Ignore duplicate view errors
     }
   }, [currentStory]);
@@ -124,7 +124,7 @@ export const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps
         description: "Your message was sent to the live stream",
       });
       setMessage('');
-    } catch (_error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to send message",

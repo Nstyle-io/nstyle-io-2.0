@@ -162,6 +162,10 @@ export const GoogleMapsInterface: React.FC<GoogleMapsInterfaceProps> = ({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<GoogleMap | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
+  const [errorState, setErrorState] = useState<{
+    type: 'script-error' | 'invalid-key' | 'timeout' | null;
+    message?: string;
+  }>({ type: null });
   const markersRef = useRef<GoogleMarker[]>([]);
   const circleRef = useRef<GoogleCircle | null>(null);
 
@@ -313,18 +317,10 @@ export const GoogleMapsInterface: React.FC<GoogleMapsInterfaceProps> = ({
         isLoadingScript = false;
         
         // Show user-friendly error message
-        if (mapRef.current) {
-          mapRef.current.innerHTML = `
-            <div class="w-full h-full flex items-center justify-center p-4 bg-gray-100 dark:bg-gray-900">
-              <div class="text-center">
-                <div class="text-red-500 text-2xl mb-2">⚠️</div>
-                <p class="text-sm font-semibold text-red-600 mb-2">Failed to load Google Maps</p>
-                <p class="text-xs text-gray-600 mb-2">Please check your internet connection and API key</p>
-                <p class="text-xs text-gray-500 mt-2">Error: ${error}</p>
-              </div>
-            </div>
-          `;
-        }
+        setErrorState({
+          type: 'script-error',
+          message: `Error: ${error}`
+        });
         setIsMapReady(false);
       };
 
@@ -335,17 +331,10 @@ export const GoogleMapsInterface: React.FC<GoogleMapsInterfaceProps> = ({
       // Validate API key format
       if (apiKey === 'your_google_maps_api_key_here' || apiKey.length < 20) {
         console.error('GoogleMapsInterface: Invalid API key format');
-        if (mapRef.current) {
-          mapRef.current.innerHTML = `
-            <div class="w-full h-full flex items-center justify-center p-4 bg-gray-100 dark:bg-gray-900">
-              <div class="text-center">
-                <div class="text-yellow-500 text-2xl mb-2">🔑</div>
-                <p class="text-sm font-semibold text-yellow-600 mb-2">Invalid API Key</p>
-                <p class="text-xs text-gray-600 mb-2">Please configure a valid Google Maps API key</p>
-              </div>
-            </div>
-          `;
-        }
+        setErrorState({
+          type: 'invalid-key',
+          message: 'Please configure a valid Google Maps API key'
+        });
         return;
       }
       
@@ -357,15 +346,11 @@ export const GoogleMapsInterface: React.FC<GoogleMapsInterfaceProps> = ({
           console.warn('GoogleMapsInterface: Map initialization timeout');
           const timeoutDiv = document.createElement('div');
           timeoutDiv.className = 'timeout-message absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900';
-          timeoutDiv.innerHTML = `
-            <div class="text-center">
-              <div class="text-orange-500 text-2xl mb-2">⏱️</div>
-              <p class="text-sm font-semibold text-orange-600 mb-2">Map Loading Timeout</p>
-              <p class="text-xs text-gray-600 mb-2">The map is taking longer than expected to load</p>
-              <button class="mt-2 px-3 py-1 text-xs bg-primary text-primary-foreground rounded" onclick="location.reload()">Refresh Page</button>
-            </div>
-          `;
-          mapRef.current.appendChild(timeoutDiv);
+          setErrorState({
+            type: 'timeout',
+            message: 'The map is taking longer than expected to load'
+          });
+          // Timeout div is now handled by React state
         }
       }, 15000); // 15 second timeout
     }
@@ -429,13 +414,22 @@ export const GoogleMapsInterface: React.FC<GoogleMapsInterfaceProps> = ({
 
         // Add click listener to show info
         marker.addListener('click', () => {
+          const infoDiv = document.createElement('div');
+          infoDiv.className = 'p-3 min-w-[200px]';
+          
+          const titleEl = document.createElement('h3');
+          titleEl.className = 'font-semibold text-gray-900 mb-1';
+          titleEl.textContent = place.title;
+          
+          const typeEl = document.createElement('p');
+          typeEl.className = 'text-sm text-gray-600';
+          typeEl.textContent = place.type || 'Salon';
+          
+          infoDiv.appendChild(titleEl);
+          infoDiv.appendChild(typeEl);
+          
           const infoWindow = new window.google.maps.InfoWindow({
-            content: `
-              <div class="p-3 min-w-[200px]">
-                <h3 class="font-semibold text-gray-900 mb-1">${place.title}</h3>
-                <p class="text-sm text-gray-600">${place.type || 'Salon'}</p>
-              </div>
-            `
+            content: infoDiv
           });
           infoWindow.open(mapInstanceRef.current!, marker);
         });
@@ -508,7 +502,7 @@ export const GoogleMapsInterface: React.FC<GoogleMapsInterfaceProps> = ({
           position: 'relative'
         }}
       />
-      {!isMapReady && (
+      {!isMapReady && !errorState.type && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-900">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
@@ -516,6 +510,43 @@ export const GoogleMapsInterface: React.FC<GoogleMapsInterfaceProps> = ({
             <p className="text-xs text-muted-foreground mt-2">
               {!window.google?.maps ? 'Loading Google Maps script...' : 'Initializing map...'}
             </p>
+          </div>
+        </div>
+      )}
+      
+      {errorState.type && (
+        <div className="absolute inset-0 flex items-center justify-center p-4 bg-gray-100 dark:bg-gray-900">
+          <div className="text-center">
+            {errorState.type === 'script-error' && (
+              <>
+                <div className="text-red-500 text-2xl mb-2">⚠️</div>
+                <p className="text-sm font-semibold text-red-600 mb-2">Failed to load Google Maps</p>
+                <p className="text-xs text-gray-600 mb-2">Please check your internet connection and API key</p>
+                {errorState.message && (
+                  <p className="text-xs text-gray-500 mt-2">{errorState.message}</p>
+                )}
+              </>
+            )}
+            {errorState.type === 'invalid-key' && (
+              <>
+                <div className="text-yellow-500 text-2xl mb-2">🔑</div>
+                <p className="text-sm font-semibold text-yellow-600 mb-2">Invalid API Key</p>
+                <p className="text-xs text-gray-600 mb-2">{errorState.message}</p>
+              </>
+            )}
+            {errorState.type === 'timeout' && (
+              <>
+                <div className="text-orange-500 text-2xl mb-2">⏱️</div>
+                <p className="text-sm font-semibold text-orange-600 mb-2">Map Loading Timeout</p>
+                <p className="text-xs text-gray-600 mb-2">{errorState.message}</p>
+                <button 
+                  className="mt-2 px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90"
+                  onClick={() => window.location.reload()}
+                >
+                  Refresh Page
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
