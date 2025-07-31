@@ -1,0 +1,35 @@
+# Supabase Edge Functions Dockerfile
+FROM denoland/deno:alpine-1.40.4
+
+# Install system dependencies
+RUN apk add --no-cache \
+    curl \
+    ca-certificates
+
+# Create non-root user
+RUN addgroup -g 1001 -S deno
+RUN adduser -S supabase -u 1001 -G deno
+
+WORKDIR /app
+
+# Copy functions
+COPY supabase/functions ./functions
+
+# Copy shared dependencies
+COPY supabase/functions/_shared ./functions/_shared
+
+# Set proper permissions
+RUN chown -R supabase:deno /app
+
+# Switch to non-root user
+USER supabase
+
+# Expose port for edge functions
+EXPOSE 54321
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:54321/health || exit 1
+
+# Start Supabase edge functions server
+CMD ["deno", "run", "--allow-all", "--allow-net", "--allow-read", "--allow-env", "functions/serve.ts"]
