@@ -42,7 +42,7 @@ const BottomNav = () => {
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
-          const isCamera = item.id === 'camera';
+          const isCreate = item.id === 'create';
           
           return (
             <Button
@@ -51,18 +51,18 @@ const BottomNav = () => {
               size="sm"
               onClick={() => handleNavigation(item)}
               className={`flex-1 flex-col h-14 space-y-1 ${
-                (isActive && !isCamera)
+                (isActive && !isCreate)
                   ? 'text-primary'
                   : 'text-muted-foreground hover:text-primary'
               } ${
-                isCamera
+                isCreate
                   ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:text-white rounded-xl mx-1'
                   : ''
               }`}
             >
-              <Icon className={`w-5 h-5 ${(isActive && !isCamera) ? 'drop-shadow-glow-primary' : ''}`} />
+              <Icon className={`w-5 h-5 ${(isActive && !isCreate) ? 'drop-shadow-glow-primary' : ''}`} />
               <span className="text-xs font-medium">{item.label}</span>
-              {(isActive && !isCamera) && (
+              {(isActive && !isCreate) && (
                 <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
               )}
             </Button>
