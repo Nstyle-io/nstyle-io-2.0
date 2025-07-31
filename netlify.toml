@@ -1,7 +1,6 @@
 [build]
-  base = "/opt/build/repo"
   command = "cd frontend && npm install && npm run build"
-  publish = "/opt/build/repo/frontend/dist"
+  publish = "frontend/dist"
 
 [build.environment]
   NODE_VERSION = "18"
