@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Search, X, User, Building2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Search, User, Building2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -54,9 +53,9 @@ export const NewConversationModal: React.FC<NewConversationModalProps> = ({
     } else {
       setSearchResults([]);
     }
-  }, [searchQuery]);
+  }, [searchQuery, performSearch]);
 
-  const performSearch = async () => {
+  const performSearch = useCallback(async () => {
     setIsLoading(true);
     try {
       const results: (UserResult | SalonResult)[] = [];
@@ -100,7 +99,7 @@ export const NewConversationModal: React.FC<NewConversationModalProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [searchQuery, currentUserId, toast]);
 
   const handleSelectUser = (result: UserResult | SalonResult) => {
     if ('user_id' in result) {

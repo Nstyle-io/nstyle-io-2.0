@@ -1,18 +1,13 @@
 /// <reference types="google.maps" />
-import React, { useState, useEffect } from 'react';
-import { Search, Star, MapPin, Clock, Phone, ExternalLink, Heart, MessageCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Search, Star, MapPin, ExternalLink, Heart, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 
-interface PlacesService {
-  textSearch(request: google.maps.places.TextSearchRequest, callback: (results: google.maps.places.PlaceResult[] | null, status: google.maps.places.PlacesServiceStatus) => void): void;
-}
 
 interface SalonPlace extends google.maps.places.PlaceResult {
   userRating?: number;
@@ -40,7 +35,7 @@ const SalonSearchList: React.FC<SalonSearchListProps> = ({
   const [newReview, setNewReview] = useState('');
   const { toast } = useToast();
 
-  const searchSalons = async (query: string) => {
+  const searchSalons = useCallback(async (query: string) => {
     if (!apiKey || !query) {
       toast({
         title: "Search Error",
@@ -168,10 +163,10 @@ const SalonSearchList: React.FC<SalonSearchListProps> = ({
       setSalons([]);
       setLoading(false);
     }
-  };
+  }, [apiKey, userLocation, toast, searchWithFallback]);
 
   // Fallback search with simpler terms
-  const searchWithFallback = async (originalQuery: string, service: google.maps.places.PlacesService) => {
+  const searchWithFallback = useCallback(async (originalQuery: string, service: google.maps.places.PlacesService) => {
     try {
       const searchLocation = userLocation || { lat: 40.7128, lng: -74.0060 };
       
@@ -195,7 +190,7 @@ const SalonSearchList: React.FC<SalonSearchListProps> = ({
     } catch (error) {
       console.error('Fallback search failed:', error);
     }
-  };
+  }, [setSalons, toast, userLocation]);
 
   // Distance calculation function
   const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
@@ -213,7 +208,7 @@ const SalonSearchList: React.FC<SalonSearchListProps> = ({
     if (searchQuery) {
       searchSalons(searchQuery);
     }
-  }, [searchQuery, apiKey, userLocation]);
+  }, [searchQuery, searchSalons]);
 
   const handleRateSalon = (salon: SalonPlace) => {
     setSelectedSalon(salon);
@@ -251,16 +246,6 @@ const SalonSearchList: React.FC<SalonSearchListProps> = ({
     ));
   };
 
-  const getDistanceText = (salon: SalonPlace) => {
-    if (!userLocation || !salon.geometry?.location) return '';
-    
-    const distance = google.maps.geometry.spherical.computeDistanceBetween(
-      new google.maps.LatLng(userLocation.lat, userLocation.lng),
-      salon.geometry.location
-    );
-    
-    return `${(distance / 1000).toFixed(1)} km away`;
-  };
 
   const renderStars = (rating: number, interactive = false, onStarClick?: (rating: number) => void) => {
     return (
@@ -323,7 +308,7 @@ const SalonSearchList: React.FC<SalonSearchListProps> = ({
           </div>
         </div>
 
-        {salons.map((salon, index) => (
+        {salons.map((salon) => (
         <Card key={salon.place_id} className="bg-background/95 backdrop-blur-sm border border-white/10 hover:bg-background transition-colors">
           <CardContent className="p-3 md:p-4">
             {/* Header with photo and basic info */}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Users, UserPlus, UserCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -40,9 +40,9 @@ const UserSearch: React.FC<UserSearchProps> = ({ currentUserId }) => {
     } else {
       setSearchResults([]);
     }
-  }, [searchQuery]);
+  }, [searchQuery, searchUsers]);
 
-  const searchUsers = async () => {
+  const searchUsers = useCallback(async () => {
     if (!searchQuery.trim()) return;
     
     setLoading(true);
@@ -99,7 +99,7 @@ const UserSearch: React.FC<UserSearchProps> = ({ currentUserId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery, currentUserId, toast]);
 
   const handleFollow = async (targetUserId: string, isPrivate: boolean) => {
     if (!currentUserId) {

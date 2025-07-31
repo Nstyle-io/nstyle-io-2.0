@@ -143,7 +143,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onClose }) => {
 
       mediaRecorder.start();
       setIsRecording(true);
-    } catch (_error) {
+    } catch {
       toast({
         title: "Recording Error",
         description: "Unable to start recording.",

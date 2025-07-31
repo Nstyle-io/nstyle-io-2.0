@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { errorLogger, LOG_LEVELS } from '../errorLogger';
+import { errorLogger } from '../errorLogger';
 
 // Mock fetch
 global.fetch = vi.fn();

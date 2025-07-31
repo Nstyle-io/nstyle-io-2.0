@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Check, X, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,9 +34,9 @@ export const FollowRequestsManager: React.FC<FollowRequestsManagerProps> = ({
 
   useEffect(() => {
     fetchFollowRequests();
-  }, [currentUserId]);
+  }, [fetchFollowRequests]);
 
-  const fetchFollowRequests = async () => {
+  const fetchFollowRequests = useCallback(async () => {
     try {
       // Use a simpler approach similar to what we did for SocialFeed
       const { data: requestsData, error: requestsError } = await supabase
@@ -81,7 +81,7 @@ export const FollowRequestsManager: React.FC<FollowRequestsManagerProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUserId]);
 
   const handleRequestAction = async (requestId: string, action: 'approve' | 'decline') => {
     try {

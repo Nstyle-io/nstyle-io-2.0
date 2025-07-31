@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Send, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,9 +40,9 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     if (isOpen) {
       fetchComments();
     }
-  }, [isOpen, postId]);
+  }, [isOpen, fetchComments]);
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     setLoading(true);
     try {
       const { data: commentsData, error } = await supabase
@@ -96,7 +96,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [postId, toast]);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();

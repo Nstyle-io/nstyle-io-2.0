@@ -1,5 +1,5 @@
 // This component is now deprecated in favor of EnhancedFollowButton
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { UserPlus, UserMinus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,9 +26,9 @@ export const FollowButton: React.FC<FollowButtonProps> = ({
     if (currentUserId && targetUserId && currentUserId !== targetUserId) {
       checkFollowStatus();
     }
-  }, [currentUserId, targetUserId]);
+  }, [currentUserId, targetUserId, checkFollowStatus]);
 
-  const checkFollowStatus = async () => {
+  const checkFollowStatus = useCallback(async () => {
     if (!currentUserId) return;
 
     try {
@@ -44,7 +44,7 @@ export const FollowButton: React.FC<FollowButtonProps> = ({
     } catch (error) {
       console.error('Error checking follow status:', error);
     }
-  };
+  }, [currentUserId, targetUserId]);
 
   const handleFollowToggle = async () => {
     if (!currentUserId || currentUserId === targetUserId) return;

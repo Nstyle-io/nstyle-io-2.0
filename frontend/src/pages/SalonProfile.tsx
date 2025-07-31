@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, MapPin, Phone, Clock, Star, Camera, Edit, Share2, Heart, MessageCircle, Settings } from 'lucide-react';
+import { ArrowLeft, MapPin, Phone, Clock, Star, Camera, Share2, Heart, MessageCircle, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +15,7 @@ const SalonProfile = () => {
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isOwner, setIsOwner] = useState(true); // Temporarily set to true for preview
-  const [currentUser, setCurrentUser] = useState(null);
+  const [_currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     const checkOwnership = async () => {
@@ -35,7 +35,7 @@ const SalonProfile = () => {
     };
 
     checkOwnership();
-  }, []);
+  }, [salon.id]);
 
   // Mock salon data
   const salon = {

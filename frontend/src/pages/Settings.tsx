@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Moon, Sun, Bell, Lock, User, Palette, Globe, HelpCircle, LogOut, ChevronRight, Shield, CreditCard, Languages, Volume2, Eye, Smartphone, Download, Sparkles } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Bell, Lock, User, Palette, HelpCircle, LogOut, ChevronRight, Shield, CreditCard, Languages, Volume2, Eye, Smartphone, Download, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
 import { useNavigate } from 'react-router-dom';
 
@@ -352,7 +352,7 @@ const Settings = () => {
                         });
                         navigate('/login');
                       }
-                    } catch (error) {
+                    } catch (_error) {
                       toast({
                         title: "Error",
                         description: "An unexpected error occurred.",

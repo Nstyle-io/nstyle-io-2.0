@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { Camera, Video, Type, X, Upload, Radio } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -19,7 +17,7 @@ export const CreateStory = ({ open, onClose, onStoryCreated }: CreateStoryProps)
   const [content, setContent] = useState('');
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
-  const [isLive, setIsLive] = useState(false);
+  const [_isLive, setIsLive] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
 

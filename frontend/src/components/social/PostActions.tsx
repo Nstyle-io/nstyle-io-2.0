@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MoreVertical, Heart, MessageCircle, Share, Bookmark, BookmarkCheck, Flag, UserMinus, Link, Trash2 } from 'lucide-react';
+import { MoreVertical, Heart, MessageCircle, Share, Bookmark, BookmarkCheck, Flag, UserMinus, Link } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,

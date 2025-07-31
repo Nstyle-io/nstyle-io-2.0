@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, Heart, MessageCircle, Send, MoreVertical, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,7 +45,7 @@ export const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps
     recordStoryView();
 
     // Set up progress timer
-    const duration = currentStory.is_live ? 0 : 5000; // 5 seconds for regular stories, no auto-advance for live
+    const _duration = currentStory.is_live ? 0 : 5000; // 5 seconds for regular stories, no auto-advance for live
     if (!currentStory.is_live) {
       const interval = setInterval(() => {
         setProgress(prev => {
@@ -80,9 +80,9 @@ export const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps
         supabase.removeChannel(channel);
       };
     }
-  }, [currentIndex]);
+  }, [currentIndex, currentStory, recordStoryView, nextStory]);
 
-  const recordStoryView = async () => {
+  const recordStoryView = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -93,19 +93,19 @@ export const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps
           story_id: currentStory.id,
           viewer_id: user.id
         });
-    } catch (error) {
+    } catch (_error) {
       // Ignore duplicate view errors
     }
-  };
+  }, [currentStory]);
 
-  const nextStory = () => {
+  const nextStory = useCallback(() => {
     if (currentIndex < stories.length - 1) {
       setCurrentIndex(currentIndex + 1);
       setProgress(0);
     } else {
       onClose();
     }
-  };
+  }, [currentIndex, stories.length, onClose]);
 
   const prevStory = () => {
     if (currentIndex > 0) {
@@ -124,7 +124,7 @@ export const StoryViewer = ({ stories, initialIndex, onClose }: StoryViewerProps
         description: "Your message was sent to the live stream",
       });
       setMessage('');
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to send message",

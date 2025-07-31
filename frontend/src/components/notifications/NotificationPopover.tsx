@@ -65,7 +65,7 @@ const NotificationPopover = () => {
         .map(n => n.actor_id)
         .filter((id, index, arr) => arr.indexOf(id) === index); // unique ids
 
-      let actorProfiles: Record<string, any> = {};
+      let actorProfiles: Record<string, unknown> = {};
       if (actorIds.length > 0) {
         const { data: profiles } = await supabase
           .from('profiles')
@@ -76,7 +76,7 @@ const NotificationPopover = () => {
           actorProfiles = profiles.reduce((acc, profile) => {
             acc[profile.user_id] = profile;
             return acc;
-          }, {} as Record<string, any>);
+          }, {} as Record<string, unknown>);
         }
       }
 

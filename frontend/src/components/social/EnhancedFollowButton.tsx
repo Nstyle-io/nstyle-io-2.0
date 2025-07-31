@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { UserPlus, UserCheck, Clock, X } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { UserPlus, UserCheck, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -29,9 +29,9 @@ export const EnhancedFollowButton: React.FC<EnhancedFollowButtonProps> = ({
       checkFollowStatus();
       checkIfTargetIsPrivate();
     }
-  }, [currentUserId, targetUserId]);
+  }, [currentUserId, targetUserId, checkFollowStatus, checkIfTargetIsPrivate]);
 
-  const checkIfTargetIsPrivate = async () => {
+  const checkIfTargetIsPrivate = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -44,9 +44,9 @@ export const EnhancedFollowButton: React.FC<EnhancedFollowButtonProps> = ({
     } catch (error) {
       console.error('Error checking if user is private:', error);
     }
-  };
+  }, [targetUserId]);
 
-  const checkFollowStatus = async () => {
+  const checkFollowStatus = useCallback(async () => {
     if (!currentUserId) return;
 
     try {
@@ -83,7 +83,7 @@ export const EnhancedFollowButton: React.FC<EnhancedFollowButtonProps> = ({
     } catch (error) {
       console.error('Error checking follow status:', error);
     }
-  };
+  }, [currentUserId, targetUserId]);
 
   const handleFollowAction = async () => {
     if (!currentUserId || currentUserId === targetUserId) return;

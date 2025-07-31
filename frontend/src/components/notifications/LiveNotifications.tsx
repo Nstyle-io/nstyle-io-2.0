@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Bell, Heart, MessageCircle, User, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -66,14 +66,14 @@ export const LiveNotifications: React.FC = () => {
         supabase.removeChannel(channel);
       };
     }
-  }, [currentUserId]);
+  }, [currentUserId, fetchNotifications]);
 
   const getCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setCurrentUserId(user?.id || null);
   };
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!currentUserId) return;
 
     try {
@@ -123,7 +123,7 @@ export const LiveNotifications: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUserId]);
 
   const markAsRead = async (notificationId: string) => {
     try {

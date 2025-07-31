@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MapPin, Navigation, Compass, Users, Clock, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -74,7 +74,7 @@ const Discover = () => {
     if (selectedCategory === 'nail-salons' && userLocation) {
       performNearbySearch();
     }
-  }, [selectedCategory, userLocation, searchRadius]);
+  }, [selectedCategory, userLocation, searchRadius, performNearbySearch]);
 
   const getCurrentUser = async () => {
     try {
@@ -197,7 +197,7 @@ const Discover = () => {
     getUserLocation();
   };
 
-  const performNearbySearch = async () => {
+  const performNearbySearch = useCallback(async () => {
     if (!userLocation) return;
 
     const results: SearchResult[] = [];
@@ -283,7 +283,7 @@ const Discover = () => {
     } catch (error) {
       console.error('Nearby search error:', error);
     }
-  };
+  }, [userLocation, searchRadius, googleMapsApiKey]);
 
   const calculateDistance = (pos1: { lat: number; lng: number }, pos2: { lat: number; lng: number }) => {
     const R = 3959; // Earth's radius in miles

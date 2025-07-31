@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Canvas as FabricCanvas, Circle, Rect, Triangle, Path, Ellipse } from 'fabric';
+import { Canvas as FabricCanvas, Circle, Rect, Triangle, Ellipse } from 'fabric';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Palette, Save, Download, Upload, Undo, Redo, Trash2, Wand2 } from 'lucide-react';
+import { Palette, Save, Download, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { AIPhotoDesigner } from './AIPhotoDesigner';
@@ -34,7 +34,7 @@ const PATTERNS = [
 ];
 
 interface NailDesignerProps {
-  onSave?: (designData: any) => void;
+  onSave?: (designData: unknown) => void;
   onAIChat?: (message: string) => void;
 }
 
@@ -45,7 +45,7 @@ export const NailDesigner: React.FC<NailDesignerProps> = ({ onSave, onAIChat }) 
   const [selectedColor, setSelectedColor] = useState('#FFB6C1');
   const [brushSize, setBrushSize] = useState(5);
   const [activeTool, setActiveTool] = useState<'select' | 'draw' | 'shapes' | 'patterns'>('select');
-  const [designs, setDesigns] = useState<any[]>([]);
+  const [designs, setDesigns] = useState<unknown[]>([]);
   const [designName, setDesignName] = useState('');
   const { toast } = useToast();
 
@@ -66,7 +66,7 @@ export const NailDesigner: React.FC<NailDesignerProps> = ({ onSave, onAIChat }) 
     return () => {
       canvas.dispose();
     };
-  }, []);
+  }, [selectedShape]);
 
   useEffect(() => {
     loadUserDesigns();
@@ -196,7 +196,7 @@ export const NailDesigner: React.FC<NailDesignerProps> = ({ onSave, onAIChat }) 
           fabricCanvas.add(stripe);
         }
         break;
-      case 'french':
+      case 'french': {
         const tip = new Ellipse({
           rx: 50,
           ry: 15,
@@ -206,6 +206,7 @@ export const NailDesigner: React.FC<NailDesignerProps> = ({ onSave, onAIChat }) 
         });
         fabricCanvas.add(tip);
         break;
+      }
     }
     
     fabricCanvas.renderAll();
@@ -293,7 +294,7 @@ export const NailDesigner: React.FC<NailDesignerProps> = ({ onSave, onAIChat }) 
     }
   };
 
-  const loadDesign = (design: any) => {
+  const loadDesign = (design: { design_data: { canvas: string; shape: keyof typeof NAIL_SHAPES } }) => {
     if (!fabricCanvas) return;
     
     fabricCanvas.loadFromJSON(design.design_data.canvas, () => {
@@ -357,7 +358,7 @@ export const NailDesigner: React.FC<NailDesignerProps> = ({ onSave, onAIChat }) 
 
             {/* Tools */}
             <div className="space-y-6">
-              <Tabs value={activeTool} onValueChange={(value) => setActiveTool(value as any)}>
+              <Tabs value={activeTool} onValueChange={(value) => setActiveTool(value as 'select' | 'draw' | 'shapes' | 'patterns')}>
                 <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="select">Select</TabsTrigger>
                   <TabsTrigger value="draw">Draw</TabsTrigger>
@@ -368,7 +369,7 @@ export const NailDesigner: React.FC<NailDesignerProps> = ({ onSave, onAIChat }) 
                 <TabsContent value="select" className="space-y-4">
                   <div>
                     <Label>Nail Shape</Label>
-                    <Select value={selectedShape} onValueChange={(value) => changeNailShape(value as any)}>
+                    <Select value={selectedShape} onValueChange={(value) => changeNailShape(value as keyof typeof NAIL_SHAPES)}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>

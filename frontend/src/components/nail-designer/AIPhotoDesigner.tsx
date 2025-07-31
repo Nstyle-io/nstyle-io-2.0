@@ -121,8 +121,8 @@ export const AIPhotoDesigner: React.FC<AIPhotoDesignerProps> = ({ onAIChat }) =>
     setIsProcessing(true);
     
     try {
-      const designPrompt = customPrompt || 
-        `Apply a beautiful ${DESIGN_STYLES.find(s => s.value === selectedStyle)?.name} nail design with ${COLOR_THEMES[selectedTheme].name} color theme to the nails in this hand photo. Make it look professional and elegant.`;
+      // const designPrompt = customPrompt || 
+      //   `Apply a beautiful ${DESIGN_STYLES.find(s => s.value === selectedStyle)?.name} nail design with ${COLOR_THEMES[selectedTheme].name} color theme to the nails in this hand photo. Make it look professional and elegant.`;
 
       // For this demo, we'll simulate AI processing
       // In a real implementation, you would call an AI image generation API

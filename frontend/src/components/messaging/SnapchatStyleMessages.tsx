@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Camera, Send, Image, Smile, Video, Mic, Clock, Eye } from 'lucide-react';
+import { Camera, Send, Image, Smile, Video, Mic, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -23,24 +22,11 @@ interface SnapMessage {
   };
 }
 
-interface SnapConversation {
-  id: string;
-  participants: {
-    user_id: string;
-    profile: {
-      display_name: string;
-      username: string;
-      avatar_url: string;
-    };
-  }[];
-  unread_count: number;
-  last_snap_at: string;
-}
 
 interface SnapchatStyleMessagesProps {
   selectedChat: string | null;
   onBack: () => void;
-  directMessageProfile?: any;
+  directMessageProfile?: unknown;
 }
 
 export const SnapchatStyleMessages: React.FC<SnapchatStyleMessagesProps> = ({
@@ -50,7 +36,7 @@ export const SnapchatStyleMessages: React.FC<SnapchatStyleMessagesProps> = ({
 }) => {
   const [messages, setMessages] = useState<SnapMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<unknown>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -63,7 +49,7 @@ export const SnapchatStyleMessages: React.FC<SnapchatStyleMessagesProps> = ({
       loadMessages();
       setupRealtimeSubscription();
     }
-  }, [selectedChat]);
+  }, [selectedChat, loadMessages, setupRealtimeSubscription]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -87,7 +73,7 @@ export const SnapchatStyleMessages: React.FC<SnapchatStyleMessagesProps> = ({
     }
   };
 
-  const setupRealtimeSubscription = () => {
+  const setupRealtimeSubscription = useCallback(() => {
     if (!selectedChat) return;
 
     const channel = supabase
@@ -100,7 +86,7 @@ export const SnapchatStyleMessages: React.FC<SnapchatStyleMessagesProps> = ({
           table: 'messages',
           filter: `conversation_id=eq.${selectedChat}`
         },
-        (payload) => {
+        (_payload) => {
           loadMessages();
         }
       )
@@ -109,9 +95,9 @@ export const SnapchatStyleMessages: React.FC<SnapchatStyleMessagesProps> = ({
     return () => {
       supabase.removeChannel(channel);
     };
-  };
+  }, [selectedChat, loadMessages]);
 
-  const loadMessages = async () => {
+  const loadMessages = useCallback(async () => {
     if (!selectedChat) return;
 
     try {
@@ -141,7 +127,7 @@ export const SnapchatStyleMessages: React.FC<SnapchatStyleMessagesProps> = ({
     } catch (error) {
       console.error('Error loading messages:', error);
     }
-  };
+  }, [selectedChat]);
 
   const sendMessage = async (content: string, type: 'text' | 'image' | 'video' = 'text', mediaUrl?: string) => {
     if (!selectedChat || !currentUser || (!content.trim() && !mediaUrl)) return;
@@ -185,7 +171,7 @@ export const SnapchatStyleMessages: React.FC<SnapchatStyleMessagesProps> = ({
       };
       
       recorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        // const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
         // Here you would upload the audio to storage and send as message
         // For now, just send a text message indicating voice message
         await sendMessage(`🎤 Voice message (${recordingTime}s)`, 'text');

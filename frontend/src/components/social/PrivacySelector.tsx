@@ -3,13 +3,6 @@ import { Globe, Users, Lock, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -27,8 +20,8 @@ interface PrivacySelectorProps {
 export const PrivacySelector: React.FC<PrivacySelectorProps> = ({
   value,
   onChange,
-  allowedUsers = [],
-  onAllowedUsersChange
+  allowedUsers: _allowedUsers = [],
+  onAllowedUsersChange: _onAllowedUsersChange
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 

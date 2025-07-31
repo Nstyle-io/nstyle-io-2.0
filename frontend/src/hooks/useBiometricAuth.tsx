@@ -59,7 +59,7 @@ export const useBiometricAuth = () => {
     }
   };
 
-  const authenticateWithBiometrics = async (userEmail: string = 'user@example.com') => {
+  const authenticateWithBiometrics = async (_userEmail: string = 'user@example.com') => {
     if (!biometricSupport.available) {
       toast({
         title: "Biometric Authentication Unavailable",
@@ -93,14 +93,16 @@ export const useBiometricAuth = () => {
         });
         return { success: true, credential };
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Biometric authentication error:', error);
       
       let errorMessage = 'Biometric authentication failed';
-      if (error.name === 'NotAllowedError') {
-        errorMessage = 'Authentication was cancelled or not allowed';
-      } else if (error.name === 'AbortError') {
-        errorMessage = 'Authentication was aborted';
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError') {
+          errorMessage = 'Authentication was cancelled or not allowed';
+        } else if (error.name === 'AbortError') {
+          errorMessage = 'Authentication was aborted';
+        }
       }
 
       toast({
@@ -164,7 +166,7 @@ export const useBiometricAuth = () => {
         });
         return { success: true, credential };
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Biometric registration error:', error);
       toast({
         title: "Registration Failed",

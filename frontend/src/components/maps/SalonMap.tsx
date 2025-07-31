@@ -142,7 +142,7 @@ const SalonMap: React.FC<SalonMapProps> = ({ apiKey, onSalonSelect }) => {
         `;
       }
     }
-  }, [apiKey, salons, onSalonSelect]);
+  }, [apiKey, getUserLocationAndCreateMap]);
 
   const getUserLocationAndCreateMap = useCallback(() => {
     // Get user's location
@@ -161,9 +161,9 @@ const SalonMap: React.FC<SalonMapProps> = ({ apiKey, onSalonSelect }) => {
         createMap({ lat: 40.7128, lng: -74.0060 }); // New York
       }
     );
-  }, []);
+  }, [createMap]);
 
-  const createMap = (center: { lat: number; lng: number }) => {
+  const createMap = useCallback((center: { lat: number; lng: number }) => {
     if (!mapRef.current) {
       console.log('Map container not found');
       return;
@@ -237,7 +237,7 @@ const SalonMap: React.FC<SalonMapProps> = ({ apiKey, onSalonSelect }) => {
         });
       }
     });
-  };
+  }, [salons, onSalonSelect]);
 
   const isOpenNow = (businessHours: BusinessHours) => {
     if (!businessHours) return false;
