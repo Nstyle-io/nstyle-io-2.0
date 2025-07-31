@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bot, Send, X, Sparkles, Palette, Heart } from 'lucide-react';
+import { Bot, Send, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -55,7 +55,7 @@ const AIChatBubble = () => {
     }, 1000);
   };
 
-  const getAIResponse = (input: string): string => {
+  const getAIResponse = (_input: string): string => {
     const responses = [
       "Great question! For your nail type, I'd recommend trying a gel manicure with a square shape. It's trending and durable! 💎",
       "Based on current trends, holographic and chrome finishes are super popular right now! Would you like salon recommendations? ✨",

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Home, Search, Plus, MessageCircle, User, Camera, Palette } from 'lucide-react';
+import { Home, Search, Plus, User, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 interface NavItem {
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   id: string;
   path: string;
@@ -42,7 +42,6 @@ const BottomNav = () => {
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
-          const isCreate = item.id === 'create';
           const isCamera = item.id === 'camera';
           
           return (

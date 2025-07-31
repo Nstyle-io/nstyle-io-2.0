@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Calendar, Clock, Star, MapPin, Phone, X, Check } from 'lucide-react';
+import { Clock, Star, MapPin, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 
 interface Service {
   id: string;

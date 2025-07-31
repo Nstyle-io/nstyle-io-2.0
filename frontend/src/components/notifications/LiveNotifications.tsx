@@ -93,7 +93,7 @@ export const LiveNotifications: React.FC = () => {
           .map(n => n.actor_id)
           .filter((id, index, self) => self.indexOf(id) === index);
 
-        let actorProfilesMap = new Map();
+        const actorProfilesMap = new Map();
         if (actorIds.length > 0) {
           const { data: profilesData } = await supabase
             .from('profiles')

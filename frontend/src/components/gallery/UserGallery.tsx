@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus, X, Camera, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -30,6 +30,24 @@ const UserGallery = ({ userId, isOwner = false, className = "" }: UserGalleryPro
   const [caption, setCaption] = useState('');
   const { toast } = useToast();
 
+  const fetchGalleryItems = useCallback(async () => {
+    setLoading(true);
+    const targetUserId = userId || (await supabase.auth.getUser()).data.user?.id;
+    
+    if (!targetUserId) return;
+
+    const { data, error } = await supabase
+      .from('user_gallery')
+      .select('*')
+      .eq('user_id', targetUserId)
+      .order('order_index', { ascending: true });
+
+    if (data && !error) {
+      setGalleryItems(data);
+    }
+    setLoading(false);
+  }, [userId]);
+
   useEffect(() => {
     fetchGalleryItems();
     
@@ -53,25 +71,7 @@ const UserGallery = ({ userId, isOwner = false, className = "" }: UserGalleryPro
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId]);
-
-  const fetchGalleryItems = async () => {
-    setLoading(true);
-    const targetUserId = userId || (await supabase.auth.getUser()).data.user?.id;
-    
-    if (!targetUserId) return;
-
-    const { data, error } = await supabase
-      .from('user_gallery')
-      .select('*')
-      .eq('user_id', targetUserId)
-      .order('order_index', { ascending: true });
-
-    if (data && !error) {
-      setGalleryItems(data);
-    }
-    setLoading(false);
-  };
+  }, [userId, fetchGalleryItems]);
 
   const uploadImage = async () => {
     if (!selectedFile) return;

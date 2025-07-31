@@ -1,7 +1,4 @@
 
-import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import DiscoverCarousel from './DiscoverCarousel';
 
 const GallerySection = () => {

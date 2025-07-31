@@ -39,8 +39,8 @@ const NailEditor: React.FC<NailEditorProps> = ({
   nailPatterns,
   selectedNail,
   onNailSelect,
-  onColorApply,
-  onPatternApply,
+  onColorApply: _onColorApply,
+  onPatternApply: _onPatternApply,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [imageObj, setImageObj] = useState<HTMLImageElement | null>(null);

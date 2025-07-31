@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Search, Menu, Settings, Sparkles, Camera, Heart, MessageCircle, User, LogOut } from 'lucide-react';
+import { Search, Settings, Sparkles, Camera, Heart, MessageCircle, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,18 +10,31 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useSidebar } from '@/contexts/SidebarContext';
 import { LiveNotifications } from '@/components/notifications/LiveNotifications';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import UserSearch from '@/components/search/UserSearch';
 import { useToast } from '@/hooks/use-toast';
 
+interface User {
+  id: string;
+  email?: string;
+  [key: string]: unknown;
+}
+
+interface Profile {
+  id: string;
+  username?: string;
+  display_name?: string;
+  avatar_url?: string;
+  [key: string]: unknown;
+}
+
 const Navbar = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {

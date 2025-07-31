@@ -385,7 +385,7 @@ export const GoogleMapsInterface: React.FC<GoogleMapsInterfaceProps> = ({
         circleRef.current.setMap(null);
       }
     };
-  }, [apiKey, userLocation, onMapLoad, searchRadius]);
+  }, [apiKey, userLocation, onMapLoad, searchRadius, isMapReady]);
 
   // Update search radius
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React from 'react';
 import { 
   Home, 
   Search, 
@@ -20,7 +20,6 @@ import {
   Play
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSidebar } from '@/contexts/SidebarContext';
@@ -30,8 +29,8 @@ interface DesktopSidebarProps {
   onItemClick?: () => void;
 }
 
-interface NavItem {
-  icon: any;
+interface _NavItem {
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   path: string;
   badge?: number;
@@ -86,7 +85,7 @@ const DesktopSidebar = ({ mobile = false, onItemClick }: DesktopSidebarProps) =>
   const { sidebarCollapsed, setSidebarCollapsed } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
+  const _isMobile = useIsMobile();
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';

@@ -1,10 +1,18 @@
 /// <reference types="google.maps" />
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
-import { MapPin, Star, Clock, Phone } from 'lucide-react';
+import { MapPin, Clock, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
+
+interface BusinessHours {
+  [key: string]: {
+    open: string;
+    close: string;
+    closed?: boolean;
+  } | { closed: true };
+}
 
 interface Salon {
   id: string;
@@ -13,7 +21,7 @@ interface Salon {
   city: string;
   state: string;
   phone: string;
-  business_hours: any;
+  business_hours: BusinessHours;
   description: string;
   logo_url: string;
   is_verified: boolean;
@@ -46,7 +54,7 @@ const SalonMap: React.FC<SalonMapProps> = ({ apiKey, onSalonSelect }) => {
       });
       initializeMap();
     }
-  }, [apiKey, salons]);
+  }, [apiKey, salons, initializeMap]);
 
   const fetchSalons = async () => {
     try {
@@ -58,7 +66,7 @@ const SalonMap: React.FC<SalonMapProps> = ({ apiKey, onSalonSelect }) => {
       if (error) throw error;
       
       // For demo purposes, add some sample coordinates
-      const salonsWithCoords = (data || []).map((salon, index) => ({
+      const salonsWithCoords = (data || []).map((salon, _index) => ({
         ...salon,
         lat: 40.7128 + (Math.random() - 0.5) * 0.1, // Random coordinates around NYC
         lng: -74.0060 + (Math.random() - 0.5) * 0.1
@@ -72,7 +80,7 @@ const SalonMap: React.FC<SalonMapProps> = ({ apiKey, onSalonSelect }) => {
     }
   };
 
-  const initializeMap = async () => {
+  const initializeMap = useCallback(async () => {
     if (!mapRef.current || !apiKey) {
       console.log('Map initialization failed:', { hasMapRef: !!mapRef.current, hasApiKey: !!apiKey });
       return;
@@ -82,7 +90,7 @@ const SalonMap: React.FC<SalonMapProps> = ({ apiKey, onSalonSelect }) => {
       console.log('Loading Google Maps with API key:', apiKey.substring(0, 10) + '...');
       
       // Add global error handler for Google Maps
-      (window as any).gm_authFailure = () => {
+      (window as unknown as { gm_authFailure: () => void }).gm_authFailure = () => {
         console.error('Google Maps authentication failed - check your API key and billing');
         if (mapRef.current) {
           mapRef.current.innerHTML = `
@@ -134,9 +142,9 @@ const SalonMap: React.FC<SalonMapProps> = ({ apiKey, onSalonSelect }) => {
         `;
       }
     }
-  };
+  }, [apiKey, salons, onSalonSelect]);
 
-  const getUserLocationAndCreateMap = () => {
+  const getUserLocationAndCreateMap = useCallback(() => {
     // Get user's location
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -153,7 +161,7 @@ const SalonMap: React.FC<SalonMapProps> = ({ apiKey, onSalonSelect }) => {
         createMap({ lat: 40.7128, lng: -74.0060 }); // New York
       }
     );
-  };
+  }, []);
 
   const createMap = (center: { lat: number; lng: number }) => {
     if (!mapRef.current) {
@@ -231,7 +239,7 @@ const SalonMap: React.FC<SalonMapProps> = ({ apiKey, onSalonSelect }) => {
     });
   };
 
-  const isOpenNow = (businessHours: any) => {
+  const isOpenNow = (businessHours: BusinessHours) => {
     if (!businessHours) return false;
     
     const now = new Date();
@@ -241,7 +249,10 @@ const SalonMap: React.FC<SalonMapProps> = ({ apiKey, onSalonSelect }) => {
     const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const todayHours = businessHours[dayNames[day]];
     
-    if (!todayHours || todayHours.closed) return false;
+    if (!todayHours || ('closed' in todayHours && todayHours.closed)) return false;
+    
+    // Type guard to ensure we have the correct type
+    if ('closed' in todayHours && todayHours.closed) return false;
     
     const openTime = parseInt(todayHours.open.replace(':', ''));
     const closeTime = parseInt(todayHours.close.replace(':', ''));

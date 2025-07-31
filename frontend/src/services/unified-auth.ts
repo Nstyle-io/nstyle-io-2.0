@@ -91,7 +91,7 @@ export class UnifiedAuthService {
       if (firebaseResult.error) {
         errors.push(`Firebase: ${firebaseResult.error}`);
       }
-    } catch (error) {
+    } catch (_error) {
       // Firebase might not be initialized
     }
 
@@ -101,7 +101,7 @@ export class UnifiedAuthService {
       if (error) {
         errors.push(`Supabase: ${error.message}`);
       }
-    } catch (error) {
+    } catch (_error) {
       // Supabase might not be initialized
     }
 

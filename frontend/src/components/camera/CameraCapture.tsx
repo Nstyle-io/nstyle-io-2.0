@@ -1,23 +1,16 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { 
-  Camera, 
   RotateCcw, 
   X, 
   Square, 
-  Circle, 
   Download, 
   Send,
   Zap,
   ZapOff,
   SwitchCamera,
   ArrowLeft,
-  Heart,
-  MessageCircle,
-  Share,
-  Bookmark,
   MoreHorizontal
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -29,7 +22,7 @@ interface CameraCaptureProps {
   onClose?: () => void;
 }
 
-export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose }) => {
+export const CameraCapture: React.FC<CameraCaptureProps> = ({ onClose }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -150,7 +143,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture, onClose
 
       mediaRecorder.start();
       setIsRecording(true);
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Recording Error",
         description: "Unable to start recording.",

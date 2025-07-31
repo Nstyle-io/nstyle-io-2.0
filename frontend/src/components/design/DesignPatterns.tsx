@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Circle, Minus, Hash, Waves, Star, Heart, Flower } from 'lucide-react';
+import { Sparkles, Circle, Minus, Waves, Star, Heart, Flower } from 'lucide-react';
 
 interface DesignPatternsProps {
   selectedPattern: string | null;

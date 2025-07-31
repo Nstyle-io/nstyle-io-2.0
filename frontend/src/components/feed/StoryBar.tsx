@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -28,25 +27,26 @@ interface StoryWithViewed extends Story {
 const StoryBar = () => {
   const [stories, setStories] = useState<StoryWithViewed[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string; email?: string } | null>(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    getCurrentUser();
-  }, []);
-
-  useEffect(() => {
-    if (currentUser) {
-      fetchStories();
-    }
-  }, [currentUser]);
 
   const getCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setCurrentUser(user);
   };
 
-  const fetchStories = async () => {
+  const getFollowingIds = useCallback(async () => {
+    if (!currentUser) return [];
+    
+    const { data } = await supabase
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', currentUser.id);
+    
+    return (data || []).map(f => f.following_id);
+  }, [currentUser]);
+
+  const fetchStories = useCallback(async () => {
     if (!currentUser) return;
 
     try {
@@ -136,18 +136,17 @@ const StoryBar = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser, getFollowingIds]);
 
-  const getFollowingIds = async () => {
-    if (!currentUser) return [];
-    
-    const { data } = await supabase
-      .from('follows')
-      .select('following_id')
-      .eq('follower_id', currentUser.id);
-    
-    return (data || []).map(f => f.following_id);
-  };
+  useEffect(() => {
+    getCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchStories();
+    }
+  }, [currentUser, fetchStories]);
 
   const handleStoryClick = async (story: StoryWithViewed) => {
     // Mark story as viewed if not already viewed and not own story

@@ -41,7 +41,7 @@ const FeaturesSection = () => {
     }
   ];
 
-  const { currentIndex: currentFeature, totalSlides, goToSlide } = useCarousel({
+  const { currentIndex: currentFeature, goToSlide } = useCarousel({
     totalItems: features.length,
     itemsPerSlide: 1,
     autoScrollInterval: 4000

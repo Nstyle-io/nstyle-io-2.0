@@ -1,13 +1,13 @@
-import { AppError, AppErrorHandler } from './error-handling';
+import { AppErrorHandler } from './error-handling';
 
-export interface ValidationRule<T = any> {
+export interface ValidationRule<T = unknown> {
   validator: (value: T) => boolean;
   message: string;
 }
 
-export interface ValidationSchema<T = Record<string, any>> {
+export type ValidationSchema<T = Record<string, unknown>> = {
   [K in keyof T]?: ValidationRule<T[K]>[];
-}
+};
 
 export interface ValidationResult {
   isValid: boolean;
@@ -25,9 +25,9 @@ export class Validator {
     };
   }
 
-  static required(message = 'This field is required'): ValidationRule<any> {
+  static required(message = 'This field is required'): ValidationRule<unknown> {
     return {
-      validator: (value: any) => {
+      validator: (value: unknown) => {
         if (typeof value === 'string') return value.trim().length > 0;
         if (Array.isArray(value)) return value.length > 0;
         return value !== null && value !== undefined;
@@ -60,7 +60,7 @@ export class Validator {
   static phone(message = 'Please enter a valid phone number'): ValidationRule<string> {
     return {
       validator: (value: string) => {
-        const phoneRegex = /^\+?[\d\s\-\(\)]{10,}$/;
+        const phoneRegex = /^\+?[\d\s\-()]{10,}$/;
         return phoneRegex.test(value.replace(/\s/g, ''));
       },
       message
@@ -81,9 +81,9 @@ export class Validator {
     };
   }
 
-  static number(message = 'Please enter a valid number'): ValidationRule<any> {
+  static number(message = 'Please enter a valid number'): ValidationRule<unknown> {
     return {
-      validator: (value: any) => !isNaN(Number(value)) && isFinite(Number(value)),
+      validator: (value: unknown) => !isNaN(Number(value)) && isFinite(Number(value)),
       message
     };
   }
@@ -116,7 +116,7 @@ export function validateField<T>(value: T, rules: ValidationRule<T>[]): string |
   return null;
 }
 
-export function validateObject<T extends Record<string, any>>(
+export function validateObject<T extends Record<string, unknown>>(
   data: T, 
   schema: ValidationSchema<T>
 ): ValidationResult {
@@ -144,7 +144,7 @@ export function sanitizeInput(input: string): string {
     .replace(/\s+/g, ' '); // Normalize whitespace
 }
 
-export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
+export function sanitizeObject<T extends Record<string, unknown>>(obj: T): T {
   const sanitized = { ...obj };
   
   for (const [key, value] of Object.entries(sanitized)) {

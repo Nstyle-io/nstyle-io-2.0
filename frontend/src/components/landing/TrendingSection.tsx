@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { TrendingUp, Hash, Flame, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ const TrendingSection = () => {
   const navigate = useNavigate();
 
   // Fallback trending data
-  const fallbackTrending: TrendingItem[] = [
+  const fallbackTrending: TrendingItem[] = useMemo(() => [
     { hashtag: "nailart", post_count: 12450, trend_score: 95.2, is_trending: true },
     { hashtag: "gelnails", post_count: 8920, trend_score: 87.5, is_trending: true },
     { hashtag: "manicure", post_count: 6780, trend_score: 82.1, is_trending: true },
@@ -28,7 +28,7 @@ const TrendingSection = () => {
     { hashtag: "nailinspiration", post_count: 3456, trend_score: 69.2, is_trending: false },
     { hashtag: "frenchnails", post_count: 2890, trend_score: 65.7, is_trending: false },
     { hashtag: "nailsofinstagram", post_count: 2567, trend_score: 62.4, is_trending: true }
-  ];
+  ], []);
 
   useEffect(() => {
     const fetchTrendingData = async () => {
@@ -49,7 +49,7 @@ const TrendingSection = () => {
     };
 
     fetchTrendingData();
-  }, []);
+  }, [fallbackTrending]);
 
   const { currentIndex, totalSlides, goToSlide } = useCarousel({
     totalItems: trendingItems.length,

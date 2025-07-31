@@ -8,13 +8,35 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 
 // Declare window.google types
+interface GoogleMapsLatLng {
+  lat(): number;
+  lng(): number;
+}
+
+interface GoogleMapsPlace {
+  place_id?: string;
+  name?: string;
+  formatted_address?: string;
+  rating?: number;
+  geometry?: {
+    location?: GoogleMapsLatLng;
+  };
+  types?: string[];
+  vicinity?: string;
+}
+
 declare global {
   interface Window {
     google: {
       maps: {
-        LatLng: new (lat: number, lng: number) => any;
+        LatLng: new (lat: number, lng: number) => GoogleMapsLatLng;
         places: {
-          PlacesService: new (element: HTMLElement) => any;
+          PlacesService: new (element: HTMLElement) => {
+            textSearch(
+              request: { query: string; type: string },
+              callback: (results: GoogleMapsPlace[] | null, status: string) => void
+            ): void;
+          };
           PlacesServiceStatus: {
             OK: string;
           };
@@ -201,9 +223,9 @@ export const LiveSearchBar: React.FC<LiveSearchBarProps> = ({
             type: 'beauty_salon' as string
           };
 
-          service.textSearch(request, (places: unknown[], status: string) => {
+          service.textSearch(request, (places: GoogleMapsPlace[] | null, status: string) => {
             if (status === window.google.maps.places.PlacesServiceStatus.OK && places) {
-              const placesResults = places.slice(0, 3).map((place: any) => {
+              const placesResults = places.slice(0, 3).map((place: GoogleMapsPlace) => {
                 const position = place.geometry?.location ? {
                   lat: place.geometry.location.lat(),
                   lng: place.geometry.location.lng()
